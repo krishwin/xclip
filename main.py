@@ -98,10 +98,10 @@ def main(config):
         acc1 = validate(val_loader, text_labels, model, config)
         logger.info(f"Accuracy of the network on the {len(val_data)} test videos: {acc1:.1f}%")
         return
-
+    scaler = torch.GradScaler()
     for epoch in range(start_epoch, config.TRAIN.EPOCHS):
         train_loader.sampler.set_epoch(epoch)
-        train_one_epoch(epoch, model, criterion, optimizer, lr_scheduler, train_loader, text_labels, config, mixup_fn)
+        train_one_epoch(epoch, model, criterion, optimizer, lr_scheduler, train_loader, text_labels, config, mixup_fn,scaler)
 
         acc1 = validate(val_loader, text_labels, model, config)
         logger.info(f"Accuracy of the network on the {len(val_data)} test videos: {acc1:.1f}%")
@@ -120,7 +120,7 @@ def main(config):
     logger.info(f"Accuracy of the network on the {len(val_data)} test videos: {acc1:.1f}%")
 
 
-def train_one_epoch(epoch, model, criterion, optimizer, lr_scheduler, train_loader, text_labels, config, mixup_fn):
+def train_one_epoch(epoch, model, criterion, optimizer, lr_scheduler, train_loader, text_labels, config, mixup_fn,scaler):
     model.train()
     optimizer.zero_grad()
     
@@ -161,19 +161,19 @@ def train_one_epoch(epoch, model, criterion, optimizer, lr_scheduler, train_load
         #    with amp.scale_loss(total_loss, optimizer) as scaled_loss:
         #        scaled_loss.backward()
         #else:
-        total_loss.backward()
+        scaler.scale(total_loss).backward()
         if config.TRAIN.ACCUMULATION_STEPS > 1:
             if (idx + 1) % config.TRAIN.ACCUMULATION_STEPS == 0:
-                optimizer.step()
+                scaler.step(optimizer)#.step()
                 optimizer.zero_grad()
                 lr_scheduler.step_update(epoch * num_steps + idx)
         else:
-            optimizer.step()
+            scaler.step(optimizer)#.step()
             lr_scheduler.step_update(epoch * num_steps + idx)
 
         if torch.cuda.is_available():
             torch.cuda.synchronize()
-        
+        scaler.update()
         tot_loss_meter.update(total_loss.item(), len(label_id))
         batch_time.update(time.time() - end)
         end = time.time()
