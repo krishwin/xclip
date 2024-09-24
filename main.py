@@ -157,23 +157,32 @@ def train_one_epoch(epoch, model, criterion, optimizer, lr_scheduler, train_load
 
         if config.TRAIN.ACCUMULATION_STEPS == 1:
             optimizer.zero_grad()
-        #if config.TRAIN.OPT_LEVEL != 'O0':
-        #    with amp.scale_loss(total_loss, optimizer) as scaled_loss:
-        #        scaled_loss.backward()
-        #else:
-        scaler.scale(total_loss).backward()
-        if config.TRAIN.ACCUMULATION_STEPS > 1:
-            if (idx + 1) % config.TRAIN.ACCUMULATION_STEPS == 0:
+        if config.TRAIN.OPT_LEVEL != 'O0':
+            scaler.scale(total_loss).backward()
+            if config.TRAIN.ACCUMULATION_STEPS > 1:
+                if (idx + 1) % config.TRAIN.ACCUMULATION_STEPS == 0:
+                    scaler.step(optimizer)#.step()
+                    optimizer.zero_grad()
+                    lr_scheduler.step_update(epoch * num_steps + idx)
+                    scaler.update()
+            else:
                 scaler.step(optimizer)#.step()
-                optimizer.zero_grad()
                 lr_scheduler.step_update(epoch * num_steps + idx)
+                scaler.update()
         else:
-            scaler.step(optimizer)#.step()
-            lr_scheduler.step_update(epoch * num_steps + idx)
-
+            total_loss.backward()
+            if config.TRAIN.ACCUMULATION_STEPS > 1:
+                if (idx + 1) % config.TRAIN.ACCUMULATION_STEPS == 0:
+                    optimizer.step()
+                    optimizer.zero_grad()
+                    lr_scheduler.step_update(epoch * num_steps + idx)
+            else:
+                optimizer.step()
+                lr_scheduler.step_update(epoch * num_steps + idx)
+            
         if torch.cuda.is_available():
             torch.cuda.synchronize()
-        scaler.update()
+        
         tot_loss_meter.update(total_loss.item(), len(label_id))
         batch_time.update(time.time() - end)
         end = time.time()
