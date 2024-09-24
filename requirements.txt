@@ -1,0 +1,11 @@
+torch 
+torchvision 
+pathlib
+mmcv
+eva-decord
+ftfy
+einops
+termcolor
+timm
+regex
+yacs
