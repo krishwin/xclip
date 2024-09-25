@@ -202,8 +202,8 @@ def train_one_epoch(epoch, model, criterion, optimizer, lr_scheduler, train_load
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
-    for name, param in model.named_parameters():
-        logger.info(f"name-{name}-param-{param}")
+    #for name, param in model.named_parameters():
+    #   logger.info(f"name-{name}-param-{param}")
         
 
 @torch.no_grad()
