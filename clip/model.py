@@ -43,10 +43,10 @@ class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
 
     def forward(self, x: torch.Tensor):
-        # orig_type = x.dtype
-        # ret = super().forward(x.type(torch.float32))
-        # return ret.type(orig_type)
-        return super().forward(x)
+        orig_type = x.dtype
+        ret = super().forward(x.type(torch.float32))
+        return ret.type(orig_type)
+        #return super().forward(x)
 
 class QuickGELU(nn.Module):
     def forward(self, x: torch.Tensor):
