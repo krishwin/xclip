@@ -3,7 +3,7 @@ import torch
 from torch import nn
 import sys
 sys.path.append("../")
-from clip.model import QuickGELU,LayerNorm
+from clip.model import QuickGELU
 
 
 class MulitHeadAttention(nn.Module):
@@ -50,8 +50,8 @@ class PromptGeneratorLayer(nn.Module):
         super().__init__()
         self.cross_attn = MulitHeadAttention(d_model, nhead, proj_drop=dropout)
 
-        self.norm1 = LayerNorm(d_model)#nn.LayerNorm(d_model)
-        self.norm3 = LayerNorm(d_model)#nn.LayerNorm(d_model)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm3 = nn.LayerNorm(d_model)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -63,6 +63,8 @@ class PromptGeneratorLayer(nn.Module):
         )
 
     def forward(self, x, visual):
+        print(f"norm1 weight:{self.norm1.weight.dtype}")
+        print(f"inout dtype:{x.dtype}")
         q = k = v = self.norm1(x)
         x = x + self.cross_attn(q, visual, visual)
         x = x + self.dropout(self.mlp(self.norm3(x)))
