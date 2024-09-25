@@ -210,7 +210,7 @@ def build_model(state_dict: dict, T=8, droppath=0., use_checkpoint=False, logger
     for key in ["input_resolution", "context_length", "vocab_size"]:
         if key in state_dict:
             del state_dict[key]
-    convert_weights(model,logger=logger)
+    #convert_weights(model,logger=logger)
     msg = model.load_state_dict(state_dict,strict=False)
     logger.info(f"load pretrained CLIP: {msg}")
     
