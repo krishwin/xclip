@@ -92,6 +92,8 @@ class VideoSpecificPrompt(nn.Module):
     
     def forward(self, text, visual):
         B, N, C = visual.shape
+        print(f"norm weight:{self.norm1.weight.dtype}")
+        print(f"inout dtype:{x.dtype}")
         visual = self.norm(visual)
         for layer in self.decoder:
             text = layer(text, visual)
