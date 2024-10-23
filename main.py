@@ -232,8 +232,11 @@ def validate(val_loader, text_labels, model, config):
 
                 if config.TRAIN.OPT_LEVEL == 'O2':
                     image_input = image_input.half()
-                
-                output = model(image_input, text_inputs)
+                if config.TRAIN.OPT_LEVEL != 'O0':
+                    with torch.autocast(device_type="cuda" if torch.cuda.is_available() else 'cpu'):
+                        output = model(image_input, text_inputs)
+                else:
+                         output = model(image_input, text_inputs)
                 
                 similarity = output.view(b, -1).softmax(dim=-1)
                 tot_similarity += similarity
