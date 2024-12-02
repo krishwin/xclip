@@ -9,4 +9,4 @@ termcolor
 timm
 regex
 yacs
-open_clip
+open_clip_torch
