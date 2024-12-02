@@ -14,8 +14,8 @@ from .simple_tokenizer import SimpleTokenizer as _Tokenizer
 import sys
 sys.path.append("../")
 from models.xclip import build_model
-
-
+from .model import CLIPVision
+import open_clip
 __all__ = ["available_models", "load", "tokenize", "_download", "_MODELS"]
 _tokenizer = _Tokenizer()
 
@@ -24,6 +24,7 @@ _MODELS = {
     "ViT-B/16": "https://openaipublic.azureedge.net/clip/models/5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f/ViT-B-16.pt",
     "ViT-L/14": "https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt",
     "ViT-L/14@336px": "https://openaipublic.azureedge.net/clip/models/3035c92b350959924f9f00213499208652fc7ea050643e8b385c2dac08641f02/ViT-L-14-336px.pt",
+    "CLIP-ViT-B-16-laion2B-s34B-b88K":"https://huggingface.co/laion/CLIP-ViT-B-16-laion2B-s34B-b88K/resolve/main/open_clip_pytorch_model.bin"
 }
 
 def _download(url: str, root: str = os.path.expanduser("~/.cache/clip")):
@@ -99,6 +100,7 @@ def load(model_path, name: str, device: Union[str, torch.device] = "cuda" if tor
     """
 
     if model_path is None:
+        
         model_path = _download(_MODELS[name])
     try:
         # loading JIT archive
@@ -195,3 +197,45 @@ def tokenize(texts: Union[str, List[str]], context_length: int = 77) -> torch.Lo
         result[i, :len(tokens)] = torch.tensor(tokens)
 
     return result
+
+def build_vit_model(state_dict: dict):
+    vision_width = state_dict["visual.conv1.weight"].shape[0]
+    vision_layers = len([k for k in state_dict.keys() if k.startswith("visual.") and k.endswith(".attn.in_proj_weight")])
+    vision_patch_size = state_dict["visual.conv1.weight"].shape[-1]
+    grid_size = round((state_dict["visual.positional_embedding"].shape[0] - 1) ** 0.5)
+    image_resolution = vision_patch_size * grid_size
+    embed_dim = state_dict["visual.proj"].shape[1]
+    model = CLIPVision(
+           image_resolution=image_resolution,
+             vision_patch_size=vision_patch_size,
+             vision_width=vision_width,
+             vision_layers=vision_layers,
+             embed_dim=embed_dim
+         ) 
+    model.load_state_dict(state_dict,strict=False)
+    return model.eval()
+
+
+def load_vit(model_path, name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu", 
+         jit=True,pretrained:str="openai",):
+    if model_path is None:
+            #model_path = _download(_MODELS[name])
+            model,preprocess_train, preprocess_val = open_clip.create_model_and_transforms(model_name=name,pretrained=pretrained)
+            model = build_vit_model(model.state_dict())
+            if str(device) == "cpu":
+                model.float()
+            return model
+    try:
+        # loading JIT archive
+        model = torch.jit.load(model_path, map_location=device if jit else "cpu").eval()
+        state_dict = None
+    except RuntimeError:
+        # loading saved state dict
+        if jit:
+            warnings.warn(f"File {model_path} is not a JIT archive. Loading as a state dict instead")
+            jit = False
+        state_dict = torch.load(model_path, map_location="cpu")
+    model = build_vit_model(state_dict or model.state_dict())
+    if str(device) == "cpu":
+        model.float()
+    return model

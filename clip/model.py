@@ -122,6 +122,23 @@ class VisionTransformer(nn.Module):
         if self.proj is not None:
             x = x @ self.proj
         return x
+    
+class CLIPVision(nn.Module):
+    def __init__(self, embed_dim: int, image_resolution: int, vision_layers: int, vision_width: int, vision_patch_size: int):
+        super().__init__()
+
+        vision_heads = vision_width // 64
+        self.visual = VisionTransformer(
+            input_resolution=image_resolution,
+            patch_size=vision_patch_size,
+            width=vision_width,
+            layers=vision_layers,
+            heads=vision_heads,
+            output_dim=embed_dim
+        )
+
+    def forward(self, image):
+        return self.visual(image)
 
 class CLIP(nn.Module):
     def __init__(self,

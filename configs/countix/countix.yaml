@@ -1,0 +1,16 @@
+DATA:
+        ROOT: './xclip/data/countix'
+        TRAIN_FILE: './xclip/data/countix/train.csv'
+        VAL_FILE: '/xclip/data/countix/val.txt'
+        DATASET: countix
+        NUM_FRAMES: 64
+        NUM_CLASSES: 5
+        LABEL_LIST: '/xclip/data/countix/labels.csv'
+MODEL:
+        ARCH: ViT-B/16
+TRAIN:
+        BATCH_SIZE: 5
+        ACCUMULATION_STEPS: 2
+        EPOCHS: 50
+        LR: 2.e-6
+SAVE_FREQ: 10

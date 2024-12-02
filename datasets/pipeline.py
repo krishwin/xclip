@@ -1807,6 +1807,7 @@ class DecordInit:
         container = decord.VideoReader(file_obj, num_threads=self.num_threads)
         results['video_reader'] = container
         results['total_frames'] = len(container)
+        results['frame_inds'] = np.arange(len(container))
         return results
 
     def __repr__(self):
@@ -2236,7 +2237,7 @@ def to_tensor(data):
         return data
     if isinstance(data, np.ndarray):
         return torch.from_numpy(data)
-    if isinstance(data, Sequence) and not mmcv.is_str(data):
+    if isinstance(data, Sequence) and not isinstance(data,str):
         return torch.tensor(data)
     if isinstance(data, int):
         return torch.LongTensor([data])
