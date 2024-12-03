@@ -393,9 +393,10 @@ def build_counitxdataloader(config):
     train_loader = DataLoader(
         train_data, sampler=None,
         batch_size=config.TRAIN.BATCH_SIZE,
-        num_workers=16,
+        num_workers=4,
         pin_memory=True,
         drop_last=True,
+        prefetch_factor=1,
         collate_fn=partial(countix_collate, samples_per_gpu=config.TRAIN.BATCH_SIZE),
     )
     
