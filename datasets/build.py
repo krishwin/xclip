@@ -211,7 +211,12 @@ class counitxDataset(VideoDataset):
     def load_annotations(self):
         video_infos = []
         with open(self.ann_file, 'r',encoding='utf-8-sig') as fin:
+            i=0
             for line in fin:
+                if(i == 0):
+                    i = i+1
+                    continue
+                i= i+1
                 line_split = line.strip().split(',')
                 filename, label,start,end,count = line_split
                 filename = filename+'.mp4'
