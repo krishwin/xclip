@@ -345,6 +345,7 @@ def countix_collate(batch, samples_per_gpu=1):
     for idx in range(len(batch)):
         if batch[idx]["imgs"].shape[0] > max_len:
             max_len = batch[idx]["imgs"].shape[0]
+    max_len = (max_len //64) * 64
     for idx in range(len(batch)):
         temp = batch[idx]["imgs"]
         temp1 = batch[idx]["count"]
