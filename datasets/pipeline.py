@@ -1855,6 +1855,15 @@ class DecordDecode:
         results['img_shape'] = imgs[0].shape[:2]
 
         return results
+@PIPELINES.register_module()
+class strideFrames:
+    def __init__(self,
+                 stride=1,
+    ):
+        self.stride = stride
+    def __call__(self, results):
+        results['frame_inds'] = np.arange(0, results['total_frames'], self.stride)
+        return results
 
 @PIPELINES.register_module()
 class SampleFrames:

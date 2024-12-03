@@ -211,12 +211,7 @@ class counitxDataset(VideoDataset):
     def load_annotations(self):
         video_infos = []
         with open(self.ann_file, 'r',encoding='utf-8-sig') as fin:
-            i=0
             for line in fin:
-                if(i == 0):
-                    i = i+1
-                    continue
-                i= i+1
                 line_split = line.strip().split(',')
                 filename, label,start,end,count = line_split
                 filename = filename+'.mp4'
@@ -365,6 +360,7 @@ def build_counitxdataloader(config):
     train_pipeline = [
         dict(type='DecordInit'),
        # dict(type='SampleFrames', clip_len=1, frame_interval=1, num_clips=config.DATA.NUM_FRAMES),
+        dict(type='strideFrames', stride=2),
         dict(type='DecordDecode'),
         #dict(type='Resize', scale=(-1, scale_resize)),
         #dict(
@@ -392,8 +388,7 @@ def build_counitxdataloader(config):
     train_loader = DataLoader(
         train_data, sampler=None,
         batch_size=config.TRAIN.BATCH_SIZE,
-        num_workers=4,
-        prefetch_factor=1,
+        num_workers=16,
         pin_memory=True,
         drop_last=True,
         collate_fn=partial(countix_collate, samples_per_gpu=config.TRAIN.BATCH_SIZE),
