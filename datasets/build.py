@@ -342,9 +342,14 @@ def countix_collate(batch, samples_per_gpu=1):
             max_len = batch[idx]["imgs"].shape[0]
     for idx in range(len(batch)):
         temp = batch[idx]["imgs"]
+        temp1 = batch[idx]["count"]
         while(batch[idx]["imgs"].shape[0] < max_len):
             batch[idx]["imgs"] = torch.cat([batch[idx]["imgs"],temp],0)
+            batch[idx]["count"] = batch[idx]["count"] + temp1
+        extra = batch[idx]["imgs"].shape[0] - max_len
+        framesperclip = torch.round(batch[idx]["imgs"].shape[0] // batch[idx]["count"] )
         batch[idx]["imgs"] = batch[idx]["imgs"][:max_len]
+        batch[idx]["count"] = batch[idx]["count"] - torch.round(extra//framesperclip)
         #batch[idx]["imgs"]  = torch.cat([batch[idx]["imgs"],torch.zeros(max_len-batch[idx]["imgs"].shape[0],3,224,224)],0)
     return default_collate(batch)
 
