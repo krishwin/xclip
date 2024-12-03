@@ -1,5 +1,5 @@
 DATA:
-        ROOT: './xclip/data/countix'
+        ROOT: './xclip/data/countix/train'
         TRAIN_FILE: './xclip/data/countix/train/train.csv'
         VAL_FILE: '/xclip/data/countix/test/val.txt'
         DATASET: countix
