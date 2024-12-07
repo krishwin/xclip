@@ -365,7 +365,7 @@ def build_counitxdataloader(config):
     train_pipeline = [
         dict(type='DecordInit'),
        # dict(type='SampleFrames', clip_len=1, frame_interval=1, num_clips=config.DATA.NUM_FRAMES),
-        dict(type='strideFrames', stride=2),
+        #dict(type='strideFrames', stride=2),
         dict(type='DecordDecode'),
         #dict(type='Resize', scale=(-1, scale_resize)),
         #dict(
@@ -376,8 +376,8 @@ def build_counitxdataloader(config):
         #    max_wh_scale_gap=1),
         dict(type='Resize', scale=(config.DATA.INPUT_SIZE, config.DATA.INPUT_SIZE), keep_ratio=False),
         #dict(type='Flip', flip_ratio=0.5),
-        #dict(type='ColorJitter', p=config.AUG.COLOR_JITTER),
-        #dict(type='GrayScale', p=config.AUG.GRAY_SCALE),
+        dict(type='ColorJitter', p=config.AUG.COLOR_JITTER),
+        dict(type='GrayScale', p=config.AUG.GRAY_SCALE),
         dict(type='Normalize', **img_norm_cfg),
         dict(type='FormatShape', input_format='NCHW'),
         dict(type='Collect', keys=['imgs', 'label','start','end','count'], meta_keys=[]),
