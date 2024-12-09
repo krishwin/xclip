@@ -1691,6 +1691,49 @@ class MultiGroupCrop:
                     f'groups={self.groups})')
         return repr_str
 
+@PIPELINES.register_module()
+class ToPILImage:
+    def __init__(self):
+        self.to_pil = torchvision.transforms.ToPILImage()
+    def __call__(self, results):
+        imgs = results['imgs']
+        imgs = [self.to_pil(img) for img in imgs]
+        results['imgs'] = imgs
+        return results
+    
+@PIPELINES.register_module()
+class Resize1:
+    def __init__(self, h,w):
+        self.h = h
+        self.w = w  
+        self.resize = torchvision.transforms.Resize((h,w))
+    def __call__(self, results):
+        imgs = results['imgs']
+        imgs = [self.resize(img) for img in imgs]
+        results['imgs'] = imgs
+        return results
+@PIPELINES.register_module()
+class ToTensor1:
+    def __init__(self):
+        self.to_tensor = torchvision.transforms.ToTensor()
+    def __call__(self, results):
+        imgs = results['imgs']
+        imgs = [self.to_tensor(img).numpy() for img in imgs]
+        results['imgs'] = imgs
+        return results
+    
+@PIPELINES.register_module()
+class Normalize1:
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+        self.norm = torchvision.transforms.Normalize(mean=self.mean, std=self.std)
+    def __call__(self, results):
+        imgs = results['imgs']
+        imgs = [self.norm(torch.from_numpy(np.array(img)).float()).numpy() for img in imgs]
+        results['imgs'] = imgs
+        return results
+
 
 @PIPELINES.register_module()
 class ColorJitter:
