@@ -2290,7 +2290,7 @@ def to_tensor(data):
     if isinstance(data, np.ndarray):
         return torch.from_numpy(data)
     if isinstance(data, Sequence) and not isinstance(data,str):
-        return torch.tensor(data)
+        return torch.tensor(np.array(data))
     if isinstance(data, int):
         return torch.LongTensor([data])
     if isinstance(data, float):
